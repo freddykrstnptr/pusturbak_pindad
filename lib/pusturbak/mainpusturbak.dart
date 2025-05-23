@@ -85,6 +85,7 @@ class _DashboardPageState extends State<DashboardPage> {
   bool _isArahAmunisiVisible = false;
   bool _showSuccessAlert = false; // Added for showing success alert
   bool _isModeDialogVisible = false;
+  bool _isDataSasaranDiterimaVisible = false;
 
 // Controller untuk input
   TextEditingController _idPucukController = TextEditingController();
@@ -114,6 +115,20 @@ class _DashboardPageState extends State<DashboardPage> {
   String arahPilihan = "Kanan";
   String gerakPilihan = "Maju";
   int currentMode = 1;
+
+  // Variabel state untuk panel Data Sasaran
+  String selectedAmmo = "Asap";
+  int gunakanIsian = 3;
+  bool pilihPucuk1 = true;
+
+  void resetAndCloseDataSasaran() {
+    setState(() {
+      selectedAmmo = "Asap";
+      gunakanIsian = 3;
+      pilihPucuk1 = true;
+      _isDataSasaranDiterimaVisible = false;
+    });
+  }
 
   // build Mode1
   Widget _buildMode1() {
@@ -558,6 +573,517 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
+  Widget _infoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        children: [
+          Expanded(
+              flex: 3,
+              child:
+                  Text(label, style: TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(flex: 5, child: Text(value)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPanelDataSasaran() {
+    return SizedBox(
+      height:
+          MediaQuery.of(context).size.height * 0.8, // maksimal tinggi 80% layar
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 8,
+              spreadRadius: 2,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: SingleChildScrollView(
+          // supaya bisa scroll
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Row: Text + Icon Close sejajar
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Data Sasaran Diterima",
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _isDataSasaranDiterimaVisible = false;
+                      });
+                    },
+                    child: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              const Text("Koreksi Ke 1",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Container(
+                width: double.infinity,
+                color: Colors.green,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                alignment: Alignment.center,
+                child: const Text("1", style: TextStyle(color: Colors.white)),
+              ),
+              const SizedBox(height: 12),
+
+              Table(
+                columnWidths: const {
+                  0: FixedColumnWidth(150),
+                  1: FlexColumnWidth(),
+                  2: FixedColumnWidth(150),
+                  3: FlexColumnWidth(),
+                },
+                defaultVerticalAlignment: TableCellVerticalAlignment.top,
+                children: [
+                  TableRow(
+                    children: [
+                      _tableCellVertical("Arah SAS", "137.0 mil / 7.71°"),
+                      _tableCellVertical("Jarak SAS", "1365 meter"),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      _tableCellVerticalMultiline(
+                        "KO Pucuk",
+                        const [
+                          "790083,",
+                          "9230861",
+                          "48M",
+                        ],
+                      ),
+                      // Ammo with Dropdown
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Ammo",
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            DropdownButton<String>(
+                              value: selectedAmmo,
+                              underline: const SizedBox(),
+                              items: <String>["Asap", "Tajam", "Cahaya"]
+                                  .map((val) => DropdownMenuItem<String>(
+                                        value: val,
+                                        child: Text(val,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.bold)),
+                                      ))
+                                  .toList(),
+                              onChanged: (val) {
+                                if (val != null) {
+                                  setState(() {
+                                    selectedAmmo = val;
+                                  });
+                                }
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      _tableCellVertical("Titik Kulminasi", "1307 meter"),
+                      _tableCellVertical("Arah Sasaran", "5879 meter"),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      _tableCellVertical("Jarak Sasaran", "1256 meter"),
+                      const SizedBox(), // kosong untuk sel terakhir agar balance
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              const Text("Gunakan Isian",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey.shade400,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                      ),
+                      child: const Text("2"),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          gunakanIsian = 3;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: gunakanIsian == 3
+                            ? Colors.black
+                            : Colors.grey.shade300,
+                        foregroundColor:
+                            gunakanIsian == 3 ? Colors.white : Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                      ),
+                      child: const Text("3"),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              const Text("Pilih Pucuk",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    pilihPucuk1 = true;
+                  });
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: pilihPucuk1 ? Colors.grey.shade300 : Colors.white,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: Colors.grey.shade700),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        pilihPucuk1
+                            ? Icons.check_circle
+                            : Icons.radio_button_unchecked,
+                        color: pilihPucuk1 ? Colors.green : Colors.grey,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text("Pucuk 1",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey.shade300,
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      pilihPucuk1 = false;
+                    });
+                  },
+                  child: const Text("Pilih Semua Pucuk"),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                      ),
+                      onPressed: () {
+                        _showTembakDialog(context);
+                      },
+                      child: const Text("SETUJU",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(7),
+                        ),
+                      ),
+                      onPressed: resetAndCloseDataSasaran,
+                      child: const Text("TOLAK",
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tableCellVertical(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16, right: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(value),
+        ],
+      ),
+    );
+  }
+
+  Widget _tableCellVerticalMultiline(String label, List<String> values) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16, right: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: values
+                .map((v) => Text(v,
+                    style: const TextStyle(fontWeight: FontWeight.normal)))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTembakDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          child: SizedBox(
+            width: 500,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: const BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Laporan Tembak",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                        size: 60,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "Perintah Tembak Diterima Pucuk 1",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop(); // tutup dialog pertama
+                            Future.delayed(Duration(milliseconds: 100), () {
+                              _showSecondDialog(
+                                  context); // buka dialog kedua setelah sedikit delay
+                            });
+                          },
+                          child: const Text(
+                            "TUTUP",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showSecondDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          child: SizedBox(
+            width: 400,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: const BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      topRight: Radius.circular(8),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "Laporan Tembak",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).pop(); // tutup dialog
+                        },
+                        child: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                        size: 60,
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        "Tembakan ke Sasaran 1693995898014 Sudah dilakukan pucuk 1",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context)
+                                .pop(); // tutup dialog ini dulu
+                            // lalu munculkan dialog kedua
+                            _showSecondDialog(context);
+                          },
+                          child: const Text(
+                            "TUTUP",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -778,7 +1304,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
           // Sidebar kiri
           Positioned(
-            left: 10,
+            left: _isDataSasaranDiterimaVisible ? 360 : 10, // GESER
             top: 80,
             child: Column(
               children: [
@@ -788,7 +1314,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 _menuButton(Icons.cloud, "Weather", () {
                   setState(() => _isWeatherVisible = !_isWeatherVisible);
                 }),
-                _menuButton(Icons.photo_library, "Galeri Tembak", () {
+                _menuButton(Icons.photo_library, "Galeri", () {
                   setState(
                       () => _isDataSasaranVisible = !_isDataSasaranVisible);
                 }),
@@ -1040,7 +1566,10 @@ class _DashboardPageState extends State<DashboardPage> {
                           Expanded(
                             child: ElevatedButton(
                               onPressed: () {
-                                setState(() => _isModeDialogVisible = false);
+                                setState(() {
+                                  _isModeDialogVisible = false;
+                                  _isDataSasaranDiterimaVisible = true;
+                                });
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
@@ -1078,6 +1607,16 @@ class _DashboardPageState extends State<DashboardPage> {
                   ),
                 ),
               ),
+            ),
+
+          // Tambahkan ini di Stack widget
+          if (_isDataSasaranDiterimaVisible)
+            Positioned(
+              top: 0,
+              bottom: 0,
+              left: 0,
+              width: 350,
+              child: _buildPanelDataSasaran(),
             ),
 
           if (_isArahAmunisiVisible)
